@@ -20,14 +20,14 @@ This yields accurate 21-cm predictions all the way to reionization (z>~10).
 The usage is the same as standard 21CMMC, that is:
 
 1- go to Programs to install (change the Makefile if needed) and
->>make
+make
 2- create boxes of initial conditions:
->> ./init 1. 1.
+./init 1. 1.
 which generates boxes (both delta and vcb) with the cosmology of WalkerCosmo_1... 
 3- evolve the boxes to the desired redshift Z (which saves the intermediate ones):
->> ./create_dens_boxes_for_LC 1. 1. Z
+./create_dens_boxes_for_LC 1. 1. Z
 4- Finally, run the 21cmFAST driver:
->>./drive_21cmMC_streamlined 1. 1. 0 0 0 Z
+./drive_21cmMC_streamlined 1. 1. 0 0 0 Z
 and that will do it.
 
 Feel free to go into
@@ -71,5 +71,5 @@ https://arxiv.org/abs/1501.06576
 https://arxiv.org/abs/1705.03471
 https://arxiv.org/abs/1801.01592
 
-and please refer to the Gits of 21cmfast,21cmmc, and 21cmvFAST:
+and please refer to the Gits of 21cmFAST,21cmmc (linked above), and 21cmvFAST:
 https://github.com/JulianBMunoz/21cmvFAST
