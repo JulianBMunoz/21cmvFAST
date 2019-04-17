@@ -1,0 +1,7 @@
+RANDOM_SEED    323.000000
+SIGMA_8    0.826
+hubble    0.6736
+Omega_M    0.3153
+Omega_L    0.6847
+Omega_b    0.0493
+ns    0.9649

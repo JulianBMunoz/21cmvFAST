@@ -1,0 +1,88 @@
+Here are the changes made to 21cmFAST to include the relative velocities:
+(April 16th 2019, by Julian B Munoz)
+
+
+Summary of modifications to 21cmFAST:
+
+In ps.c
+
+-Created the function power_in_vcb(k) To generate the power spectrum in relative velocities. And added an option in power_in_k to read from CLASS
+
+-Created TFvcb_CLASS and TFm_CLASS functions to read Transfers_z0.dat from external_tables. (Included in the code, generated with CLASS and the 2019 Planck best-fit parameters). Densities at z=0 but velocities are at z=zdrag=1060.
+
+- I added an initializer of the interpolator to read class file in init_ps(), and freed the interpolator in free_ps(). Also, a smaller detail, all integrals with kend =350/R now are kend = FMAX(350.0/R,1000.0) to avoid spurious behavior for k>kmax from class (results are unchanged).
+
+
+
+In init.c:
+
+
+Created velocity boxes in real and k-space. (Note that we have to generate v_cb^j for each direction j in order to obtain the module.)
+
+Initialized the spline interpolators for Tfm and Tfvcb.
+
+
+In variables.h
+
+-we create boxes for velocities (filtered and unfiltered) and a table for Fcoll
+//JBM:velocities too
+fftwf_complex *box_vcb, *unfiltered_vcb_box;
+float **vcb_rev;
+double **Fcoll_vcb; //the Fcoll(z,v) table for interpoaltion
+
+
+
+In cosmology.h
+
+-The outputs are saved to OUTPUT_FOLDER.
+
+-Added an option for CLASS power spectrum (instead of analytic):
+POWER_SPECTRUM (5)
+
+-You can choose whether to USE_RELATIVE_VELOCITIES, and if so, 
+whether to set them to zero (ZERO_REL_VELOCITY) or to their average value (AVG_REL_VELOCITY).
+
+-We include Lyman-Werner feedback with different strengths:
+
+FEEDBACK_LEVEL (F)
+F=0 is no feedback,
+F=1 is very-low feedback, as the theoretical model in 1402.0882 [Fig. 1  dash and dashdotted line].
+F=2-4 are low-regular-high feedback as in the paper
+F=10 is atomic-only haloes.
+
+After ZLYMANWERNER (=10) the code reverts back to standard 21CMMC.
+
+-We can generate anisotropic 21-cm power spectrum through DO_ANISOTROPY in COSMOLOGY.H.
+
+
+
+In drive_21cmMC:
+
+Here's where the bulk of the changes are. 
+
+-We read vcb boxes and calculated their smoothed values, just like density.
+-We initialize the Fcoll and sigma_cool interpolators.
+-Created GeneratePS_aniso for anisotropic power spectrum in mu bins.
+-We entirely rewrite dfcoll_dz_val (the collapse term) using relative velocities.
+
+
+ST_over_PS[R_ct] *= interpol_linear_2D(ZINT_MIN, ZINT_STEP, NZINT, VINT_MIN, VINT_STEP, NVINT,
+                        	   Fcoll_vcb, zpp, vcb_rev[box_ct][R_ct]); // interpolate to zpp (mean z) and to vcb
+
+(It either chooses the usual ST or my prescription, with vcv and Reed MF).
+
+In filter.c
+
+-Create filter_smooth, for smoothing maps. It's identical to HII_filter (prebuilt) which was in bubbles.
+
+In heating_helper_progs:
+
+-We create the interpolators for Fcoll and sigma_cool, with the interpol_linear_2D function.
+
+
+
+—I also created smooth_output_box.c, to smooth the output boxes similarly to boxcar_smooth in 21cmFAST, since 21cmmc uses the already smoothed box.
+Also folder_smooth.c applies smooth_output_box over a whole folder of outputs, and saves slices.
+
+
+
