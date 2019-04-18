@@ -60,8 +60,8 @@ Documentation/Modifications_to_21cmvFAST.txt
 If you use this work please cite:
 
 - 21cmvFAST:
-https://arxiv.org/abs/1904.XXXXX
-https://arxiv.org/abs/1904.XXXXX
+https://arxiv.org/abs/1904.07881
+https://arxiv.org/abs/1904.07868
 
 - Original 21cmFAST
 https://arxiv.org/abs/1003.3878
