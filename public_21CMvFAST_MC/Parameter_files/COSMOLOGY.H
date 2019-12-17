@@ -47,7 +47,7 @@
 
 
 
-#define OUTPUT_FOLDER "output_1"
+#define OUTPUT_FOLDER "output_xe"
 //JBM:output folder name. If you want output in programs (as default) write "."
 
 
@@ -56,7 +56,7 @@
 #define FILTER (0) /* smoothing: 0=tophat, 1=gaussian */
 #define POWER_SPECTRUM (5) /* EH=0 BBKS=1  EFSTATHIOU=2  PEEBLES=3  WHITE=4 */
 //JBM: POWER_SPECTRUM=5 reads from CLASS transfer functions//
-#define USE_RELATIVE_VELOCITIES (1)
+#define USE_RELATIVE_VELOCITIES (0)
 //JBM:whether to include DM-b relative velocities or not. 0 no 1 yes. //we take all relative velocities at z=zi.
 #define ZERO_REL_VELOCITY (0)
 //JBM: if you want USE_RELATIVE_VELOCITIES but fixing v=0 (so just molecular cooling).
@@ -72,7 +72,7 @@
 //JBM:max and min k in Mpc-1 for which we integrate. Fixed to avoid k>k_CLASS.
 #define ZLYMANWERNER 10.0
 //JBM:redshift at which our F_LW data ends, and we assume feedback saturates to atomic (T_vir input).
-#define VCB_RMS      (29.7) 
+#define VCB_RMS      (29.7)
 //JBM:value of rms vcb [<v^2>^(1/2)]
 #define VCB_AVG (double)(0.92 * VCB_RMS)
 //JBM:the avg value of vcb is slightly smaller than vrms in a MB distribution
