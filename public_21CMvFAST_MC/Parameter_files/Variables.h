@@ -44,7 +44,6 @@
 
 fftwf_complex *box, *unfiltered_box, *deldel_T, *deldel_T_LC, *deltax_unfiltered, *deltax_unfiltered_original, *deltax_filtered, *xe_unfiltered, *xe_filtered;
 
-
 //JBM:velocities too
 fftwf_complex *box_vcb, *unfiltered_vcb_box;
 float **vcb_rev;
@@ -76,8 +75,12 @@ double *aveTkin, *aveTspin, *aveXalpha;
 double *aveTspin_inv, *aveTkin_inv_sq;
 
 
-
 unsigned long long *in_bin_ct;
+
+//JBM:also parameters for xe power spectrum:
+unsigned long long *in_bin_ct_xe;
+double *p_box_xe, *k_ave_xe;
+
 
 double ***fcoll_R_grid, ***dfcoll_dz_grid;
 
