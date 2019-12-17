@@ -61,8 +61,6 @@ void GeneratePS_aniso(int CO_EVAL, double AverageTb, char* filename);
 void GeneratePS_vel();//JBM:test function to output the power spectrum of the v_cb box.
 float *smoothed_box_vcb;
 
-void GeneratePS_xe();//JBM:calculate the power spectrum of xe at a given z
-
 
 void ReadFcollTable();
 
@@ -1564,7 +1562,7 @@ void ComputeTsBoxes() {
                         Tk_inv_ave += 1.0/T;
                         Tk_inv_sq_ave += 1.0/TS_fast;
 
-
+                        
                     }
                 }
                 x_e_ave += x_e;
@@ -1616,29 +1614,6 @@ void ComputeTsBoxes() {
               aveTspin[counter] = Ts_ave;
               aveXalpha[counter] = xalpha_ave;
             }
-
-
-            ////JBM: modified to obtain power spectrum of xe/////
-            //x_e_box is a real array with a x_e map at redshift zp
-            printf("zp=%.1le, xeavg=%.2le \n", zp, x_e_ave);
-            p_box_xe = calloc(NUM_BINS,sizeof(double));
-            k_ave_xe = calloc(NUM_BINS,sizeof(double));
-            in_bin_ct_xe = (unsigned long long *)calloc(NUM_BINS,sizeof(unsigned long long));
-            GeneratePS_xe();
-            sprintf(filename, "%s/xe_spectrum_z%.1f.txt",OUTPUT_FOLDER,zp);
-            F=fopen(filename, "wt");
-            for (ct=1; ct<NUM_BINS; ct++){
-                if (in_bin_ct_xe[ct]>0)
-                    fprintf(F, "%e\t%e\t%e\n", k_ave_xe[ct]/(in_bin_ct_xe[ct]+0.0), p_box_xe[ct]/(in_bin_ct_xe[ct]+0.0), p_box_xe[ct]/(in_bin_ct_xe[ct]+0.0)/sqrt(in_bin_ct_xe[ct]+0.0));
-            }
-            fclose(F);
-            free(p_box_xe);
-            free(k_ave_xe);
-            free(in_bin_ct_xe);
-            ////////////////////////////////////////////////////////
-
-
-
 
             prev_zp = zp;
             zp = ((1+prev_zp) / ZPRIME_STEP_FACTOR - 1);
@@ -4483,119 +4458,7 @@ void GeneratePS_vel() {
 }
 
 
-//JBM: output xe power spectrum
-void GeneratePS_xe() {
 
-    fftwf_plan plan2;
-
-    int i,j,k,n_x, n_y, n_z,skip_zero_mode;
-    float k_x, k_y, k_z, k_mag;
-    double ave;
-    unsigned long long ct;
-
-    //double ave_xe = x_e_ave; //average xe
-
-    double ave_xe = 0.0; //average xe, numerically computed
-    // for (ct=0; ct<HII_TOT_NUM_PIXELS; ct++){
-    //     ave_xe += 1.0-xH[HII_R_INDEX(i,j,k)];//x_e_z[ct];
-    // }
-    for (i=0; i<HII_DIM; i++){
-        for (j=0; j<HII_DIM; j++){
-            for (k=0; k<HII_DIM; k++){
-                ave_xe += 1.0-xH[HII_R_INDEX(i,j,k)];
-                //  ave_xe += x_e_z[HII_R_INDEX(i,j,k)];
-            }
-        }
-    }
-    ave_xe/=(HII_DIM*HII_DIM*HII_DIM);
-
-
-    printf("ave_xe=%.2le \n",ave_xe);
-
-    fftwf_complex *delxe;
-    delxe = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
-
-
-
-
-
-    for (ct=0; ct<NUM_BINS; ct++){
-        p_box_xe[ct] = k_ave_xe[ct] = 0.;
-        in_bin_ct_xe[ct] = 0.;
-    }
-
-
-
-    double currxe;
-    // fill-up the real-space of the deldel box
-    for (i=0; i<HII_DIM; i++){
-        for (j=0; j<HII_DIM; j++){
-            for (k=0; k<HII_DIM; k++){
-                  currxe=1.0-xH[HII_R_INDEX(i,j,k)];
-                  *((float *)delxe + HII_R_FFT_INDEX(i,j,k)) = (currxe/ave_xe - 1.0)*VOLUME/(HII_TOT_NUM_PIXELS+0.0);
-
-                if (DIMENSIONAL_T_POWER_SPEC){
-                    *((float *)delxe + HII_R_FFT_INDEX(i,j,k)) *= ave_xe;
-                }
-                // Note: we include the V/N factor for the scaling after the fft
-            }
-        }
-    }
-
-    // transform to k-space
-    plan2 = fftwf_plan_dft_r2c_3d(HII_DIM, HII_DIM, HII_DIM, (float *)delxe, (fftwf_complex *)delxe, FFTW_ESTIMATE);
-    fftwf_execute(plan2);
-    fftwf_destroy_plan(plan2);
-
-    // If the light-cone 21cm PS is to be calculated, one should avoid the k(k_x = 0, k_y = 0, k_z) modes (see Datta et al. 2012).
-        // Co-eval box, so should sample the entire cube
-
-        // now construct the power spectrum file
-        for (n_x=0; n_x<HII_DIM; n_x++){
-            if (n_x>HII_MIDDLE)
-                k_x =(n_x-HII_DIM) * DELTA_K;  // wrap around for FFT convention
-            else
-                k_x = n_x * DELTA_K;
-
-            for (n_y=0; n_y<HII_DIM; n_y++){
-
-                if (n_y>HII_MIDDLE)
-                    k_y =(n_y-HII_DIM) * DELTA_K;
-                else
-                    k_y = n_y * DELTA_K;
-
-                for (n_z=0; n_z<=HII_MIDDLE; n_z++){
-                    k_z = n_z * DELTA_K;
-
-                    k_mag = sqrt(k_x*k_x + k_y*k_y + k_z*k_z);
-
-                    // now go through the k bins and update
-                    ct = 0;
-                    k_floor = 0;
-                    k_ceil = k_first_bin_ceil;
-                    while (k_ceil < k_max){
-                        // check if we fal in this bin
-                        if ((k_mag>=k_floor) && (k_mag < k_ceil)){
-                            in_bin_ct_xe[ct]++;
-                            p_box_xe[ct] += pow(k_mag,3)*pow(cabs(delxe[HII_C_INDEX(n_x, n_y, n_z)]), 2)/(2.0*PI*PI*VOLUME);
-                            // note the 1/VOLUME factor, which turns this into a power density in k-space
-
-                            k_ave_xe[ct] += k_mag;
-                            break;
-                        }
-
-                        ct++;
-                        k_floor=k_ceil;
-                        k_ceil*=k_factor;
-                    }
-                }
-            }
-        } // end looping through k box
-
-  fftwf_free(delxe);
-
-
-}
 
 
 
@@ -4621,8 +4484,6 @@ void init_21cmMC_HII_arrays() {
     xe_filtered = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
     deldel_T = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
     deldel_T_LC = (fftwf_complex *) fftwf_malloc(sizeof(fftwf_complex)*HII_KSPACE_NUM_PIXELS);
-
-
 
     deltax = (float *) calloc(HII_TOT_FFT_NUM_PIXELS,sizeof(float));
     Fcoll = (float *) calloc(HII_TOT_NUM_PIXELS,sizeof(float));
@@ -4792,8 +4653,6 @@ void destroy_21cmMC_HII_arrays(int skip_deallocate) {
     fftwf_free(deldel_T_LC);
     fftwf_free(xe_unfiltered);
     fftwf_free(xe_filtered);
-
-
 
     free(xH);
     free(deltax);
