@@ -1620,21 +1620,23 @@ void ComputeTsBoxes() {
 
             ////JBM: modified to obtain power spectrum of xe/////
             //x_e_box is a real array with a x_e map at redshift zp
-            printf("zp=%.1le, xeavg=%.2le \n", zp, x_e_ave);
-            p_box_xe = calloc(NUM_BINS,sizeof(double));
-            k_ave_xe = calloc(NUM_BINS,sizeof(double));
-            in_bin_ct_xe = (unsigned long long *)calloc(NUM_BINS,sizeof(unsigned long long));
-            GeneratePS_xe();
-            sprintf(filename, "%s/xe_spectrum_z%.1f.txt",OUTPUT_FOLDER,zp);
-            F=fopen(filename, "wt");
-            for (ct=1; ct<NUM_BINS; ct++){
-                if (in_bin_ct_xe[ct]>0)
-                    fprintf(F, "%e\t%e\t%e\n", k_ave_xe[ct]/(in_bin_ct_xe[ct]+0.0), p_box_xe[ct]/(in_bin_ct_xe[ct]+0.0), p_box_xe[ct]/(in_bin_ct_xe[ct]+0.0)/sqrt(in_bin_ct_xe[ct]+0.0));
+            if(FLAG_OUTPUT_XEPOWSP){
+              printf("zp=%.1le, xeavg=%.2le \n", zp, x_e_ave);
+              p_box_xe = calloc(NUM_BINS,sizeof(double));
+              k_ave_xe = calloc(NUM_BINS,sizeof(double));
+              in_bin_ct_xe = (unsigned long long *)calloc(NUM_BINS,sizeof(unsigned long long));
+              GeneratePS_xe();
+              sprintf(filename, "%s/xe_spectrum_z%.1f.txt",OUTPUT_FOLDER,zp);
+              F=fopen(filename, "wt");
+              for (ct=1; ct<NUM_BINS; ct++){
+                  if (in_bin_ct_xe[ct]>0)
+                      fprintf(F, "%e\t%e\t%e\n", k_ave_xe[ct]/(in_bin_ct_xe[ct]+0.0), p_box_xe[ct]/(in_bin_ct_xe[ct]+0.0), p_box_xe[ct]/(in_bin_ct_xe[ct]+0.0)/sqrt(in_bin_ct_xe[ct]+0.0));
+              }
+              fclose(F);
+              free(p_box_xe);
+              free(k_ave_xe);
+              free(in_bin_ct_xe);
             }
-            fclose(F);
-            free(p_box_xe);
-            free(k_ave_xe);
-            free(in_bin_ct_xe);
             ////////////////////////////////////////////////////////
 
 
