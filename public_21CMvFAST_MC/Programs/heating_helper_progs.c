@@ -1743,13 +1743,13 @@ double interpol_linear_2D(const double x0,const  double dx, const int Nx, const 
   // Check if in range
   if (  (dx > 0 && (x<x0 || x>x0+dx*(Nx-1)))
       ||(dx < 0 && (x>x0 || x<x0+dx*(Nx-1))) ) {
-	printf("Error: interpol_linear_2D: value out of range in x. Range is (%le,%le) and x=%le. \n",x0,x0+dx*(Nx-1),x);
+	fprintf(stderr, "Error: interpol_linear_2D: value out of range in x. Range is (%le,%le) and x=%le. \n",x0,x0+dx*(Nx-1),x);
  //   exit(1);
   }
 
   if (  (dy > 0 && (y<y0 || y>y0+dy*(Ny-1)))
       ||(dy < 0 && (y>y0 || y<y0+dy*(Ny-1))) ) {
-  printf("Error: interpol_linear_2D: value out of range in y. Range is (%le,%le) and y=%le. \n",y0,y0+dy*(Ny-1),y);
+  fprintf(stderr, "Error: interpol_linear_2D: value out of range in y. Range is (%le,%le) and y=%le. \n",y0,y0+dy*(Ny-1),y);
  //   exit(1);
   }
 
