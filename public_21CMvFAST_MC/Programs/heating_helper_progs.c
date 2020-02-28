@@ -1743,33 +1743,43 @@ double interpol_linear_2D(const double x0,const  double dx, const int Nx, const 
   // Check if in range
   if (  (dx > 0 && (x<x0 || x>x0+dx*(Nx-1)))
       ||(dx < 0 && (x>x0 || x<x0+dx*(Nx-1))) ) {
-	fprintf(stderr, "Error: interpol_linear_2D: value out of range in x. Range is (%le,%le) and x=%le. \n",x0,x0+dx*(Nx-1),x);
+	printf("Error: interpol_linear_2D: value out of range in x. Range is (%le,%le) and x=%le. \n",x0,x0+dx*(Nx-1),x);
  //   exit(1);
   }
 
   if (  (dy > 0 && (y<y0 || y>y0+dy*(Ny-1)))
       ||(dy < 0 && (y>y0 || y<y0+dy*(Ny-1))) ) {
-  fprintf(stderr, "Error: interpol_linear_2D: value out of range in y. Range is (%le,%le) and y=%le. \n",y0,y0+dy*(Ny-1),y);
+  printf("Error: interpol_linear_2D: value out of range in y. Range is (%le,%le) and y=%le. \n",y0,y0+dy*(Ny-1),y);
  //   exit(1);
   }
 
   // Identify locations to interpolate
-  ix = (long) round((x-x0)/dx);
-  if (ix<1) ix=1;
+  ix = (long) floor((x-x0)/dx);
+  if (ix<0) ix=0;
   if (ix>Nx-2) ix=Nx-2;
   double fracx = x - (x0+dx*ix);
 
-  iy = (long) round((y-y0)/dy);
-  if (iy<1) iy=1;
+  iy = (long) floor((y-y0)/dy);
+  if (iy<0) iy=0;
   if (iy>Ny-2) iy=Ny-2;
   double fracy = y - (y0+dy*iy);
 
-  double fcurr = ftab[ix][iy];
-  double dfcurr_dx = (ftab[ix+1][iy]-ftab[ix-1][iy])/(2*dx);
-  double dfcurr_dy = (ftab[ix][iy+1]-ftab[ix][iy-1])/(2*dy);
+  double f11=ftab[ix][iy];
+  double f12=ftab[ix][iy+1];
+  double f21=ftab[ix+1][iy];
+  double f22=ftab[ix+1][iy+1];
 
+  double df11dx=(f21-f11)/dx;
+  double df12dx=(f22-f12)/dx;
 
-  double res = fcurr + dfcurr_dx * fracx + dfcurr_dy * fracy;
+  double fx1=f11+df11dx * fracx;
+  double fx2=f12+df12dx * fracx;
+
+  double dfx1dy = (fx2-fx1)/dy;
+
+  double fxy=fx1 + dfx1dy * fracy;
+  double res = fxy;
+
 
 
   return res;
